@@ -1,0 +1,33 @@
+{
+    "libs": [
+        "jquery",
+        "bootstrap",
+        "manySelect",
+        "moment",
+        "bootbox",
+        "echart"
+    ],
+    "atoms": [
+        "base",
+        "events",
+        "pages",
+        "util",
+        "linktree",
+        "convertpinyin"
+    ],
+    "modules": [
+        "accordionmenu",
+        "tip",
+        "daterangepicker",
+        "select",
+        "singleselect",
+        "multiselect",
+        "suggest",
+        "calendar",
+        "domcalendar",
+        "timecalendar",
+        "oacalendar",
+        "structure",
+        "viewreport"
+    ]
+}  

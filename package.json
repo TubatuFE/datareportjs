@@ -1,0 +1,28 @@
+{
+  "name": "viewreportjs",
+  "version": "0.0.1",
+  "description": "数据报表JS优化",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "build": "rollup -c && gulp build:js"
+  },
+  "dependencies": {
+    "numeral": "^2.0.6"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chalk": "^2.4.1",
+    "glob": "^7.1.3",
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^3.10.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-uglyfly": "^1.4.2",
+    "mocha": "^5.2.0",
+    "ora": "^3.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
