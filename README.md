@@ -39,3 +39,9 @@ npm run build
 ```sh
 npm run deploy
 ```
+
+### 一键打包构建部署
+
+```sh
+npm run doall
+```

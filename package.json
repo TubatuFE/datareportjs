@@ -10,7 +10,8 @@
     "clear:deploy": "gulp clear:deploy",
     "bundle": "rollup -c",
     "build": "npm run bundle && gulp build",
-    "deploy": "gulp deploy"
+    "deploy": "gulp deploy",
+    "doall": "npm run clear && npm run build && npm run deploy"
   },
   "dependencies": {
     "numeral": "^2.0.6"
