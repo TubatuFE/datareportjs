@@ -22,8 +22,20 @@ rollup -c
 gulp build:js
 ```
 
+### 清空输出文件
+
+```sh
+npm run clear
+```
+
 ### 一键打包（打包app.js，合并app.js和库文件组合命令）
 
 ```sh
 npm run build
+```
+
+### 部署
+
+```sh
+npm run deploy
 ```

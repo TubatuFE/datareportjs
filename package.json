@@ -5,7 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "build": "rollup -c && gulp build:js"
+    "clear": "gulp clear",
+    "clear:build": "gulp clear:build",
+    "clear:deploy": "gulp clear:deploy",
+    "bundle": "rollup -c",
+    "build": "npm run bundle && gulp build",
+    "deploy": "gulp deploy"
   },
   "dependencies": {
     "numeral": "^2.0.6"
