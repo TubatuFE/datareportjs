@@ -245,11 +245,11 @@
         
         for(var item in menuSetting){
 
-            id = item;
-            col = menuSetting[item]['col'];
-            value = menuSetting[item]['value'];
-            parent = menuSetting[item]['parent'];
-            dimensionView = menuSetting[item]['dimensionView'];
+            var id = item;
+            var col = menuSetting[item]['col'];
+            var value = menuSetting[item]['value'];
+            var parent = menuSetting[item]['parent'];
+            var dimensionView = menuSetting[item]['dimensionView'];
             
             if(col == probableValue){
                 var input_id = 'input[id=' + id + ']';
@@ -329,11 +329,11 @@
 
         for(var item in menuSetting){
 
-            id = item;
-            col = menuSetting[item]['col'];
-            value = menuSetting[item]['value'];
-            parent = menuSetting[item]['parent'];
-            dimensionView = menuSetting[item]['dimensionView'];
+            var id = item;
+            var col = menuSetting[item]['col'];
+            var value = menuSetting[item]['value'];
+            var parent = menuSetting[item]['parent'];
+            var dimensionView = menuSetting[item]['dimensionView'];
 
             if(col == probableValue){
                 
@@ -395,10 +395,10 @@
         for(var item in menuSetting){
 
             var id = item;
-            col = menuSetting[item]['col'];
-            value = menuSetting[item]['value'];
-            parent = menuSetting[item]['parent'];
-            dimensionView = menuSetting[item]['dimensionView'];
+            var col = menuSetting[item]['col'];
+            var value = menuSetting[item]['value'];
+            var parent = menuSetting[item]['parent'];
+            var dimensionView = menuSetting[item]['dimensionView'];
 
             if(col == probableValue){
                 var input_id = 'input[id=' + id + ']';
@@ -441,11 +441,11 @@
         
         for(var item in menuSetting){
             
-                id = item;
-                col = menuSetting[item]['col'];
-                value = menuSetting[item]['value'];
-                parent = menuSetting[item]['parent'];
-                dimensionView = menuSetting[item]['dimensionView'];
+                var id = item;
+                var col = menuSetting[item]['col'];
+                var value = menuSetting[item]['value'];
+                var parent = menuSetting[item]['parent'];
+                var dimensionView = menuSetting[item]['dimensionView'];
                 //selectArr.push({id:id,col:col,value:value,title:parent,dimensionView:dimensionView});
                 /*rendLinkTree(id, value, [], parent, dimensionView, col);*/
             
