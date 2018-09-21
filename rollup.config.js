@@ -1,6 +1,7 @@
 export default {
     input: 'src/App.js',
     context: 'window',
+    sourcemap: true,
     output: {
       name: 'App',
       file: 'app.js',

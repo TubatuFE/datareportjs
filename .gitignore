@@ -4,3 +4,4 @@ _atoms
 _modules
 app.js
 index.js
+*.map
