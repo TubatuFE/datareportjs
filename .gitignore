@@ -2,6 +2,7 @@ node_modules
 _libs
 _atoms
 _modules
+lib.js
 app.js
 index.js
 *.map

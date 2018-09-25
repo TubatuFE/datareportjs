@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" class="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="renderer" content="webkit">
+	<title>to8to-数据后台</title>
+	<notempty name="php_process_time">
+	<script>
+		var backend_process_time = <?php echo($php_process_time);?>;
+		var backend_process_time_start = <?php echo($php_process_time_start);?>;
+		var backend_process_time_end = <?php echo($php_process_time_end);?>;
+
+		var date_start = "<?php echo($date_start);?>";
+		var date_end = "<?php echo($date_end);?>";
+
+		var page_path_info = "{$page_path_name}" + "（{$date_start} ~ {$date_end}）";
+		var user_name = "{$_SESSION['username']}";
+	</script>
+	</notempty>
+    <script type="text/javascript" src="/Public/dist/timeProbe.min.js?v=1.0.0"></script>
+    <!-- build:css -->
+    <link rel="stylesheet" type="text/css" href="/Public/Report/css/index.min.css" />
+    <!-- endbuild -->
+</head>
+<body class="bg_f8">
+<if condition="$request_type eq ''">
+    <block name="headerinfo"><include file="Public:headerinfo" /></block>
+</if>
+<div id="bodycontent" class="content">
+    <table id="viewReport">
+        <tr>
+            <td  class="td_left">
+                <if condition="$request_type eq ''">
+                    <div id="cont_left" class="cont_left_noblank">
+                        <block name="leftmenu"><include file="Public:leftmenu" /></block>
+                    </div>
+                </if>
+            </td>
+            <td>
+                <div id="cont_right" class="cont_right">
+                    <block name="businessdata"><include file="Business:businessdata" /></block>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+<!-- build:js -->
+<script type="text/javascript" src="/Public/bundle/lib.js"></script>
+<script type="text/javascript" src="/Public/bundle/app.js"></script>
+<!-- <script type="text/javascript" src="/Public/bundle/index.js"></script> -->
+<!-- endbuild -->
+<script type="text/javascript">
+  document.getElementById('viewReport').style.minHeight = document.body.clientHeight - 60 +'px';
+  new App.Structure().init();
+  new App.BusinessData().init();
+</script>
+</body>
+</html>
