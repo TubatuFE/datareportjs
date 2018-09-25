@@ -1,5 +1,5 @@
-    import AccordionMenu from './accordionmenu.js';
-    import Notice from './tip.js';
+    import AccordionMenu from './coms/accordionmenu.js';
+    import Notice from './coms/tip.js';
 
 	var Structure = function(){
 

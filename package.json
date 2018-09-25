@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
+    "start": "rollup -c --watch",
     "clear": "gulp clear",
     "clear:build": "gulp clear:build",
     "clear:deploy": "gulp clear:deploy",
     "bundle": "rollup -c",
     "build": "npm run bundle && gulp build",
     "deploy": "gulp deploy",
-    "doall": "npm run clear && npm run build && npm run deploy"
+    "release:js": "npm run clear && npm run build && npm run deploy",
+    "release": "npm run release:js && npm version patch && gulp html"
   },
   "dependencies": {
     "numeral": "^2.0.6"
@@ -27,7 +29,8 @@
     "gulp-rename": "^1.4.0",
     "gulp-uglyfly": "^1.4.2",
     "mocha": "^5.2.0",
-    "ora": "^3.0.0"
+    "ora": "^3.0.0",
+    "rollup": "^0.66.2"
   },
   "keywords": [],
   "author": "",
