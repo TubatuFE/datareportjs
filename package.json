@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "start": "rollup -c --watch",
+    "start": "gulp",
     "clear": "gulp clear",
     "clear:build": "gulp clear:build",
     "clear:deploy": "gulp clear:deploy",
