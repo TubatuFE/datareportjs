@@ -13,7 +13,7 @@
     "build": "npm run bundle && gulp build",
     "deploy": "gulp deploy",
     "release:js": "npm run clear && npm run build && npm run deploy",
-    "release": "npm run release:js && npm version patch && gulp html"
+    "release": "npm run release:js && npm version minor && gulp html"
   },
   "dependencies": {
     "numeral": "^2.0.6"

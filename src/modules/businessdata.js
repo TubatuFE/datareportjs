@@ -7,6 +7,8 @@
     import Suggest from './coms/suggest.js';
     import Calendar from './coms/timecalendar.js';
     import OaCalendar from './coms/oa-calendar.js';
+    // import TimeProbe from './atoms/time'
+    import Timer from './atoms/timer'
     
 	var BusinessData = function(){
 	}
@@ -127,7 +129,8 @@
 
     //初始化维度下拉框
     function initLinkTree(){
-        // var Linktree = require('linktree'),
+        console.log('1) call initLinkTree');
+
         var url;
         if(checkURLType()===1){
             url = window.location.href + '/req_menu/1';
@@ -135,8 +138,12 @@
             url = window.location.href + '&req_menu=1';
         }
 
+        console.log('2) url', url);
+
         var menuSetting = $('#menu_select').val() ? JSON.parse($('#menu_select').val()) : null;
-        
+
+        console.log('3) menuSetting', menuSetting);
+
         var col1=[],col2=[],col3=[],col_date=[],col_text=[],col_qujian=[];
         if(menuSetting){
             for(var item in menuSetting){
@@ -170,53 +177,87 @@
                 
             }
         }
-        
-        
-        $.get(url, {}, function(data) {
-            //console.log(data);
-            if(data.col1 && data.col1.length > 0) {
 
+        Timer.tag('user_name', user_name);
+        Timer.tag('path', location.pathname);
+        Timer.tag('page_nav', page_path_info);
+        Timer.tag('date_start', date_start);
+        Timer.tag('date_end', date_end);
+        // TimeProbe.set();
+        Timer.start('ajax_time');
+        $.get(url, {}, function(data) {
+            Timer.stop('ajax_time');
+            // console.log('4) call $.get callback res', data);
+            // console.log('5) $.get请求响应时间: %s秒', TimeProbe.get());
+            Timer.start('render_time');
+            var hasFilter = false;
+            if(data.col1 && data.col1.length > 0) {
+                hasFilter = true;
+                Timer.tag('filter_select1_num', data.col1.length);
+                // TimeProbe.set();
                 var probableValue = convertData(data.col1);
 
                 var linktree = new Linktree();
                 
                 linkTreeHandler(linktree.bulidTree(data.col1), probableValue,col1);
+                // console.log('6.1) col1：linkTreeHandler 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col1[0], data.col1[0]);
             }
 
             if(data.col2 && data.col2.length > 0){
-                
+                hasFilter = true;
+                Timer.tag('filter_select2_num', data.col2.length);
+                // TimeProbe.set();
                 for(var col2_k in data.col2){
                     var probableValue2 = convertData(data.col2[col2_k]);
                     var selectArr2 = createAllLinkTree(col2, probableValue2);
                     createChange(selectArr2[0].id,selectArr2, 0, '');
                 }
+                // console.log('6.2) col2: createAllLinkTree 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col2[0], data.col2[0]);
             }
 
             if(data.col3 && data.col3.length > 0){
+                hasFilter = true;
+                Timer.tag('filter_select3_num', data.col3.length);
+                // TimeProbe.set();
                 for(var col3_k in data.col3){
                     var probableValue3 = convertData(data.col3[col3_k]);
                     var selectArr3 = createAllLinkTree(col3, probableValue3);
                     createChange(selectArr3[0].id,selectArr3, 0, '');
                 }
+                // console.log('6.3) col3: createAllLinkTree 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col3[0], data.col3[0]);
             }
 
             if(data.col_date && data.col_date.length > 0) {
+                hasFilter = true;
+                Timer.tag('filter_date_num', data.col_date.length);
+                // TimeProbe.set();
                 for(var coldate_k in data.col_date){
                     createDate(col_date,data.col_date[coldate_k])
                 }
+                // console.log('6.4) col_date: createDate 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col_date[0], data.col_date[0]);
             }
 
             if(data.col_qujian && data.col_qujian.length > 0) {
+                hasFilter = true;
+                Timer.tag('filter_qujian_num', data.col_qujian.length);
+                // TimeProbe.set();
                 for(var colqujian_k in data.col_qujian){
                     createQujian(col_qujian,data.col_qujian[colqujian_k])
                 }
+                // console.log('6.5) col_qujian: createQujian 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col_qujian[0], data.col_qujian[0]);
             }
 
             if(data.col_text && data.col_text.length > 0) {
+                hasFilter = true;
+                Timer.tag('filter_text_num', data.col_text.length);
+                // TimeProbe.set();
                 for(var coltext_k in data.col_text){
                     createText(col_text,data.col_text[coltext_k])
                 }
+                // console.log('6.6) col_text: createText 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col_text[0],  data.col_text[0]);
             }
+            Timer.stop('render_time');
+            if (hasFilter) { Timer.post(); }
         });
     }
 
@@ -469,7 +510,6 @@
     
     //渲染下拉菜单
     function rendLinkTree( name, defaultvalue, data, title, dimensionView, col ){
-        
         var html = "",
             common =  [{value:col + '*_*' +'gb',text:'展开'},{value:col + '*_*' +'summary',text:'收拢'}],
             lastValue = true;
@@ -480,14 +520,14 @@
             $('<div class="col_l dw-query-field m_b_10"><input class="subline_input ' + name  + '" name="' + name + '" ></div>').insertBefore($('div.option_canal input.submit'));
             $('<div class="input-group"><span class="input-group-addon">' + title + ':</span><select id="'+ name  +'" title="支持多选，请选择" data-live-search="true" multiple="" data-hide-disabled="true" data-width="214" data-size="10" tabindex="-98"></select></div>').insertBefore($('input.' + name));
         }
-        
+    
         //上次记录的值
         //lastValue =  $('select[id="' + name + '"] option:selected').val();
         data = common.concat(data);
         if(defaultvalue === 'by'){
             defaultvalue = 'gb';
         }
-        
+
         var aDefaultvalue = defaultvalue.split(',');
         var aDefaultvalue_str = '';
         
@@ -512,8 +552,6 @@
         }
         $(select_id).html(html);
 
-        
-        
         if(lastValue){
             $(select_id + ' option').eq(1).attr('selected','selected');
             $('input[name=' + name + ']').val($(select_id + ' option').eq(1).val());
@@ -527,7 +565,7 @@
         $(select_id).selectpicker({
             selectedTextFormat:'count > 3'
         });
-        
+
         $('input.'+name).hide();
     }
     
