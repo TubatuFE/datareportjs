@@ -121,7 +121,7 @@ gulp.task('html', function () {
   htmlreplace()
   gulp.src('src/html/ViewReport.html')
     .pipe(htmlreplace({
-      // 'css': '/Public/Report/css/index.min.css?v='+version,
+      'css': '/Public/Report/css/index.min.css?v=1.0.0',
       'js': [
         '/Public/bundle/lib.js?v=1.0.0',
         '/Public/bundle/app.js?v=' + version

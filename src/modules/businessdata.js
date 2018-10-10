@@ -129,7 +129,7 @@
 
     //初始化维度下拉框
     function initLinkTree(){
-        console.log('1) call initLinkTree');
+        // console.log('1) call initLinkTree');
 
         var url;
         if(checkURLType()===1){
@@ -138,11 +138,11 @@
             url = window.location.href + '&req_menu=1';
         }
 
-        console.log('2) url', url);
+        // console.log('2) url', url);
 
         var menuSetting = $('#menu_select').val() ? JSON.parse($('#menu_select').val()) : null;
 
-        console.log('3) menuSetting', menuSetting);
+        // console.log('3) menuSetting', menuSetting);
 
         var col1=[],col2=[],col3=[],col_date=[],col_text=[],col_qujian=[];
         if(menuSetting){
