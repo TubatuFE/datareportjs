@@ -1,5 +1,7 @@
 var gulp = require('gulp');
 var concat = require('gulp-concat');
+var uglyfly = require('gulp-uglyfly');
+var rename = require("gulp-rename");
 var htmlreplace = require('gulp-html-replace');
 var rollup = require('rollup');
 var fs = require('fs');
@@ -27,7 +29,8 @@ var deployPublicBundle = deployPublic + '/bundle';
 var jsLibFiles = [
   'src/libs/jquery-1.9.1.min.js',
   'src/libs/bootstrap.min.js',
-  'src/libs/many-select.js',
+  // 'src/libs/many-select.js', // many-select.js 用 bootstrap-select.js 替代
+  'src/libs/bootstrap-select.js',
   'src/libs/bootbox.min.js',
   'src/libs/moment.min.js',
   'src/libs/echarts-all.js'
@@ -36,16 +39,22 @@ var jsLibFiles = [
 var jsSrcFiles = [
   'src/libs/jquery-1.9.1.min.js',
   'src/libs/bootstrap.min.js',
-  'src/libs/many-select.js',
+  // 'src/libs/many-select.js', // many-select.js 用 bootstrap-select.js 替代
+  'src/libs/bootstrap-select.js',
   'src/libs/bootbox.min.js',
   'src/libs/moment.min.js',
   'src/libs/echarts-all.js',
-  'dist/app.js',
+  'dist/app.js'
 ];
 
 gulp.task('build:lib', function () {
   gulp.src(jsLibFiles)
     .pipe(concat('lib.js'))
+    .pipe(gulp.dest('dist'))
+    .pipe(uglyfly())
+    .pipe(rename(function (path) {
+      path.basename += ".min";
+    }))
     .pipe(gulp.dest('dist'));
 });
 
@@ -89,7 +98,7 @@ gulp.task('clear:deploy', function (done) {
     deployPublicBundle + '/app.js',
     deployPublicBundle + '/app.js.map',
     deployPublicBundle + '/index.js',
-    deployPublicBundle + '/lib.js'
+    deployPublicBundle + '/lib.min.js'
   ]);
   rmDir(deployPublicBundle);
   done();
@@ -103,7 +112,7 @@ gulp.task('clear', ['clear:build', 'clear:deploy'], function () {
 });
 
 gulp.task('deploy', ['clear:deploy'], function () {
-  gulp.src(['dist/index.js', 'dist/app.js', 'dist/app.js.map', 'dist/lib.js'])
+  gulp.src(['dist/index.js', 'dist/app.js', 'dist/app.js.map', 'dist/lib.min.js'])
       .pipe(gulp.dest(deployPublicBundle));
 });
 
@@ -118,12 +127,14 @@ gulp.task('default', function () {
 });
 
 gulp.task('html', function () {
-  htmlreplace()
   gulp.src('src/html/ViewReport.html')
     .pipe(htmlreplace({
-      'css': '/Public/Report/css/index.min.css?v=1.0.0',
+      'css': [
+        '/Public/Report/css/index.min.css?v=1.0.0',
+        '/Public/Report/css/bootstrap-select.min.css?v=1.0.0'
+      ],
       'js': [
-        '/Public/bundle/lib.js?v=1.0.0',
+        '/Public/bundle/lib.min.js?v=1.1.0',
         '/Public/bundle/app.js?v=' + version
       ]
     }))

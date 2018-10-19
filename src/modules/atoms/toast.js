@@ -50,6 +50,12 @@ var Toast = {
       Toast._el.style.display = 'none';
       cb && cb(Toast._el);
     }, delay);
+  },
+  hide () {
+    if (Toast._timer) {
+      clearTimeout(Toast._timer);
+    }
+    Toast._el.style.display = 'none';
   }
 }
 

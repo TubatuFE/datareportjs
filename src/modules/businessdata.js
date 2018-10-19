@@ -478,6 +478,9 @@
                     if(value && value !='by' && value!= 'summary'){
                         $('input[id=' + id + ']').val(value);
                         o.val(col + '*_*' + value + '-~');
+                    } else {
+                        $('input[id=' + id + ']').val('');
+                        o.val(col + '*_*');
                     }
                     
                     $('input[id=' + id + ']').bind('blur',function(){
@@ -490,7 +493,7 @@
                                 o.val(probableValue + "*_*" + $(this).val() + '-~')
                             }
                         } else {
-                            o.val('');
+                            o.val(probableValue + '*_*');
                         }
                     });
                 }
