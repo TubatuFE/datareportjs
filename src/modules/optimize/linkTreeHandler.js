@@ -1,6 +1,8 @@
 import TreeUtils from '../atoms/TreeUtils'
+import Timer from '../atoms/timer';
 
 var linkTree = {
+  rows: [],
   selects: {},
   selectIds: [],
   renderData: function (fieldMapValues, filterSettings) {
@@ -137,24 +139,45 @@ var linkTree = {
         var name = $select.attr('id');
         var $value = $('input[name=' + name + ']');
 
-        if (clickedIndex === 0) {
-          // 展开
-          $select.selectpicker('deselectAll'); // 取消所有选择
-          $select.selectpicker('val', ['new_luodi_type*_*gb']);
-          $value.val('new_luodi_type*_*gb');
-        } else if (clickedIndex === 1) {
-          // 收拢
-          $select.selectpicker('deselectAll'); // 取消所有选择
-          $select.selectpicker('val', ['new_luodi_type*_*summary']);
-          $value.val('new_luodi_type*_*summary');
-        } else{
+        if (clickedIndex === 0 || clickedIndex === 1) {
+          // 展开 & 收拢
+          var optVal = $select.children().eq(clickedIndex).val();
           if (val) {
-            $value.val(val.join(','));
+            $select.selectpicker('val', [optVal]);
+            $value.val(optVal);
+          } else {
+            // 没有值
+            $select.selectpicker('val', '');
+            $value.val('');
           }
-          // 其他选项
+        } else {
+          if (val) {
+            var optVal1 = $select.children().eq(0).val(),
+                optVal2 = $select.children().eq(1).val();
+            var idx1 = val.indexOf(optVal1),
+                idx2 = val.indexOf(optVal2);
+            var rewrite = false;
+
+            if (idx1 !== -1) {
+              rewrite = true;
+              val.splice(idx1, 1);
+            }
+            if (idx2 !== -1) {
+              rewrite = true;
+              val.splice(idx2, 1);
+            }
+
+            if (rewrite) {
+              $select.selectpicker('val', val);
+            }
+            $value.val(val.join(','));
+          } else {
+            // 没有值
+            $value.val('');
+          }
         }
 
-        console.log('[event]changed.bs.select clickedIndex: %d, value: %o', clickedIndex, val);
+        // console.log('[event]changed.bs.select clickedIndex: %d, value: %o', clickedIndex, val);
       }).on('hide.bs.select', function (e) {
         var $this = $(this); // this === e.target
         var val = $this.val();
@@ -164,29 +187,40 @@ var linkTree = {
 
         if (val == null) {
           // 如果什么也没选 则默认选择 eq(1) 选项 并给input name=select* 赋值
-          var option1Val = $this.children().eq(1).val();
-          $value.val(option1Val);
+          var defaultVal = $select.children().eq(1).val();
+          $select.selectpicker('val', [defaultVal]);
+          $value.val(defaultVal);
         }
 
-        console.log('[event]hide.bs.select value: %o', val);
+        // console.log('[event]hide.bs.select value: %o', val);
       });
     }
   }
 };
 
-var linkTreeHandlerOptimize = function (treeData, fieldMapValues, filterSettings) {
+var linkTreeHandlerOptimize = function (rows, filterSettings) {
+  linkTree.rows = rows;
+
+  Timer.start('convert_data_time');
+  var fieldMapValues = TreeUtils.rowsToMap(rows, 1000);
+  Timer.stop('convert_data_time');
+
+  Timer.start('bulid_tree_time');
+  var treeData = TreeUtils.buildTree(rows, 1000);
+  Timer.stop('bulid_tree_time');
+
+  Timer.start('link_tree_handler_time');
   var renderData = linkTree.renderData(fieldMapValues, filterSettings);
   // TreeUtils.PrintTree.call({ value: '筛选树数据', next: treeData});
   linkTree.initRender(renderData);
-  linkTree.renderSelect('sel_1');
-  linkTree.renderSelect('sel_2');
-  linkTree.renderSelect('sel_3');
-  linkTree.renderSelect('sel_4', 300);
-  linkTree.renderSelect('sel_5');
-  linkTree.renderSelect('sel_6');
-  linkTree.renderSelect('sel_7', 300);
-  linkTree.renderSelect('sel_8');
+
+  var selectIds = linkTree.selectIds;
+  for (var i = 0, len = selectIds.length; i < len; i++) {
+    linkTree.renderSelect(selectIds[i]);
+  }
+
   linkTree.bindEvents(treeData);
+  Timer.stop('link_tree_handler_time');
 };
 
 export default linkTreeHandlerOptimize;

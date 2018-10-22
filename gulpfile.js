@@ -131,7 +131,7 @@ gulp.task('html', function () {
     .pipe(htmlreplace({
       'css': [
         '/Public/Report/css/index.min.css?v=1.0.0',
-        '/Public/Report/css/bootstrap-select.min.css?v=1.0.0'
+        '/Public/Report/css/bootstrap-select.min.css?v=1.1.0'
       ],
       'js': [
         '/Public/bundle/lib.min.js?v=1.1.0',

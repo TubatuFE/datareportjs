@@ -54,17 +54,8 @@ function initLinkTree(){
       if(data.col1 && data.col1.length > 0) {
           hasFilter = true;
           Timer.tag('filter_select1_num', data.col1.length);
-          Timer.start('convert_data_time');
-          var fieldMapValues = TreeUtils.rowsToMap(data.col1);
-          Timer.stop('convert_data_time');
 
-          Timer.start('bulid_tree_time');
-          var treeData = TreeUtils.buildTree(data.col1);
-          Timer.stop('bulid_tree_time');
-          Timer.start('link_tree_handler_time');
-          // linkTreeHandler(treeData, fieldMapValues, FilterSettings.col1);
-          linkTreeHandlerOptimize(treeData, fieldMapValues, FilterSettings.col1); // 优化联动下拉渲染
-          Timer.stop('link_tree_handler_time');
+          linkTreeHandlerOptimize(data.col1, FilterSettings.col1); // 优化联动下拉渲染
       }
 
       if(data.col2 && data.col2.length > 0){
@@ -531,7 +522,7 @@ function createText(menuSetting, probableValue){
                     o.val(col + '*_*' + value + '-~');
                 } else {
                     $('input[id=' + id + ']').val('');
-                    o.val(col + '*_*');
+                    o.val(col + '*_*gb');
                 }
                 
                 $('input[id=' + id + ']').bind('blur',function(){
@@ -544,7 +535,7 @@ function createText(menuSetting, probableValue){
                             o.val(probableValue + "*_*" + $(this).val() + '-~')
                         }
                     } else {
-                        o.val(probableValue + '*_*');
+                        o.val(probableValue + '*_*gb');
                     }
                 });
             }

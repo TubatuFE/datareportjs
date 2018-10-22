@@ -7,18 +7,17 @@
     import Suggest from './coms/suggest.js';
     import Calendar from './coms/timecalendar.js';
     import OaCalendar from './coms/oa-calendar.js';
-    // import TimeProbe from './atoms/time'
     import Timer from './atoms/timer';
-    import Loading from './atoms/loading';
-    import Toast from './atoms/toast';
-    import './atoms/printtop';
-    import './atoms/formsubmit';
+    // import Loading from './atoms/loading';
+    // import Toast from './atoms/toast';
+    // import './atoms/printtop';
+    /// import './atoms/formsubmit';
     
 	var BusinessData = function(){
 	}
 
 	BusinessData.prototype.init = function(){
-        Loading.show('数据已加载，等待筛选条件就绪...');
+        // Loading.show('数据已加载，等待筛选条件就绪...');
 		initEvent();
 		this.render();
 	}
@@ -188,24 +187,21 @@
         Timer.tag('page_nav', page_path_info);
         Timer.tag('date_start', date_start);
         Timer.tag('date_end', date_end);
-        // TimeProbe.set();
+
         Timer.start('ajax_time');
         $.get(url, {}, function(data) {
             Timer.stop('ajax_time');
-            // console.log('4) call $.get callback res', data);
-            // console.log('5) $.get请求响应时间: %s秒', TimeProbe.get());
             Timer.start('render_time');
             var hasFilter = false;
             if(data.col1 && data.col1.length > 0) {
-                data.col1.PrintTop(10);
+                // data.col1.PrintTop(10);
                 hasFilter = true;
                 Timer.tag('filter_select1_num', data.col1.length);
-                // TimeProbe.set();
                 Timer.start('convert_data_time');
                 var probableValue = convertData(data.col1);
                 Timer.stop('convert_data_time');
 
-                console.log('probableValue: %o', probableValue);
+                // console.log('probableValue: %o', probableValue);
 
                 var linktree = new Linktree();
                 
@@ -215,72 +211,61 @@
                 Timer.start('link_tree_handler_time');
                 linkTreeHandler(bulidTreeRes, probableValue, col1);
                 Timer.stop('link_tree_handler_time');
-                // console.log('6.1) col1：linkTreeHandler 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col1[0], data.col1[0]);
             }
 
             if(data.col2 && data.col2.length > 0){
                 hasFilter = true;
                 Timer.tag('filter_select2_num', data.col2.length);
-                // TimeProbe.set();
                 for(var col2_k in data.col2){
                     var probableValue2 = convertData(data.col2[col2_k]);
                     var selectArr2 = createAllLinkTree(col2, probableValue2);
                     createChange(selectArr2[0].id,selectArr2, 0, '');
                 }
-                // console.log('6.2) col2: createAllLinkTree 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col2[0], data.col2[0]);
             }
 
             if(data.col3 && data.col3.length > 0){
                 hasFilter = true;
                 Timer.tag('filter_select3_num', data.col3.length);
-                // TimeProbe.set();
                 for(var col3_k in data.col3){
                     var probableValue3 = convertData(data.col3[col3_k]);
                     var selectArr3 = createAllLinkTree(col3, probableValue3);
                     createChange(selectArr3[0].id,selectArr3, 0, '');
                 }
-                // console.log('6.3) col3: createAllLinkTree 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col3[0], data.col3[0]);
             }
 
             if(data.col_date && data.col_date.length > 0) {
                 hasFilter = true;
                 Timer.tag('filter_date_num', data.col_date.length);
-                // TimeProbe.set();
                 for(var coldate_k in data.col_date){
                     createDate(col_date,data.col_date[coldate_k])
                 }
-                // console.log('6.4) col_date: createDate 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col_date[0], data.col_date[0]);
             }
 
             if(data.col_qujian && data.col_qujian.length > 0) {
                 hasFilter = true;
                 Timer.tag('filter_qujian_num', data.col_qujian.length);
-                // TimeProbe.set();
                 for(var colqujian_k in data.col_qujian){
                     createQujian(col_qujian,data.col_qujian[colqujian_k])
                 }
-                // console.log('6.5) col_qujian: createQujian 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col_qujian[0], data.col_qujian[0]);
             }
 
             if(data.col_text && data.col_text.length > 0) {
                 hasFilter = true;
                 Timer.tag('filter_text_num', data.col_text.length);
-                // TimeProbe.set();
                 for(var coltext_k in data.col_text){
                     createText(col_text,data.col_text[coltext_k])
                 }
-                // console.log('6.6) col_text: createText 处理时间: %s秒, 数据类型: %s %o', TimeProbe.get(), typeof data.col_text[0],  data.col_text[0]);
             }
             Timer.stop('render_time');
-            Loading.hide();
-            var costTime =Timer.getTime('ajax_time') + Timer.getTime('render_time');
-            if (costTime > 5000) {
-                var toastDelay = costTime / 10;
-                toastDelay = toastDelay < 500 ? 500 : toastDelay > 3000 ? 3000 : toastDelay;
-                Toast.show('clock', '耗时：' + parseFloat(costTime / 1000).toFixed(1) + '秒' + "\n非常抱歉，让您久等了...", toastDelay, function (el) {
-                    Toast.show(null, '^_^感谢您的耐心等待' + "\n" + '现在可以完整使用报表了...');
-                });
-            }
+            // Loading.hide();
+            // var costTime =Timer.getTime('ajax_time') + Timer.getTime('render_time');
+            // if (costTime > 5000) {
+            //     var toastDelay = costTime / 10;
+            //     toastDelay = toastDelay < 500 ? 500 : toastDelay > 3000 ? 3000 : toastDelay;
+            //     Toast.show('clock', '耗时：' + parseFloat(costTime / 1000).toFixed(1) + '秒' + "\n非常抱歉，让您久等了...", toastDelay, function (el) {
+            //         Toast.show(null, '^_^感谢您的耐心等待' + "\n" + '现在可以完整使用报表了...');
+            //     });
+            // }
 
             if (hasFilter) { Timer.post(); }
         });
@@ -301,7 +286,7 @@
         Timer.start('set_link_tree_default_time');
         setlinkTreeDefault(selectArr);
         Timer.stop('set_link_tree_default_time');
-        console.log('selectArr', selectArr);
+        // console.log('selectArr', selectArr);
     }
 
     /**
@@ -480,7 +465,7 @@
                         o.val(col + '*_*' + value + '-~');
                     } else {
                         $('input[id=' + id + ']').val('');
-                        o.val(col + '*_*');
+                        o.val(col + '*_*gb');
                     }
                     
                     $('input[id=' + id + ']').bind('blur',function(){
@@ -493,7 +478,7 @@
                                 o.val(probableValue + "*_*" + $(this).val() + '-~')
                             }
                         } else {
-                            o.val(probableValue + '*_*');
+                            o.val(probableValue + '*_*gb');
                         }
                     });
                 }
@@ -542,7 +527,7 @@
             }
         }
         // console.log('注释 createAllLinkTree/rendLinkTree');
-        console.log('counterOut: %s, counterInner: %s', counterOut, counterInner);
+        // console.log('counterOut: %s, counterInner: %s', counterOut, counterInner);
         return selectArr;
     }
     
@@ -616,8 +601,8 @@
         Timer.stop('rendLinkTree');
         var loop_count = data.length;
 
-        console.log('title: %s, loop_count: %d, rendLinkTree: %d ms, $(%s).selectpicker(refresh): %d ms, selectpicker2: %d ms',
-        title, loop_count, Timer.getTime('rendLinkTree'), select_id, Timer.getTime('selectpicker'), Timer.getTime('selectpicker2'));
+        // console.log('title: %s, loop_count: %d, rendLinkTree: %d ms, $(%s).selectpicker(refresh): %d ms, selectpicker2: %d ms',
+        // title, loop_count, Timer.getTime('rendLinkTree'), select_id, Timer.getTime('selectpicker'), Timer.getTime('selectpicker2'));
     }
 
     function selectRender (name,obj) {
