@@ -1,12 +1,24 @@
 import TreeUtils from '../atoms/TreeUtils'
 import Timer from '../atoms/timer';
+// import Mask from '../atoms/mask';
 
 var linkTree = {
   rows: [],
   selects: {},
   selectIds: [],
+  selectTreeValue: [],
+  getTreeValue: function () {
+    var selectIds = this.selectIds;
+    var selects = this.selects;
+    var selectTreeValue = [];
+    for (var i = 0, len = selectIds.length; i < len; i++) {
+      var value = selects[selectIds[i]].$value.val();
+      selectTreeValue.push(value);
+    }
+    return selectTreeValue;
+  },
   renderData: function (fieldMapValues, filterSettings) {
-    console.log('[renderData]字段映射表: %o, 筛选设置：%o', fieldMapValues, filterSettings);
+    // console.log('[renderData]字段映射表: %o, 筛选设置：%o', fieldMapValues, filterSettings);
     var id,
         col,
         value,
@@ -46,18 +58,34 @@ var linkTree = {
   },
   renderSelect: function (id, maxCount, options) {
     var select = linkTree.selects[id];
+    var value = select.value;
     var field = select.field;
     var publicoptions =  [{value: field + '*_*' +'gb', text:'展开'}, {value: field + '*_*' +'summary', text: '收拢'}];
+
+    // console.log('field: %s, value: %o', field, value);
+    // 首次渲染：补充已经选中的值
+    if (select.firstRender) {
+      var fieldVal0 = value[0].split('*_*')[1];
+      if (fieldVal0 !== 'gb' && fieldVal0 !== 'summary') {
+        for (var i = 0, len = value.length; i < len; i++) {
+          publicoptions.push({value: value[i], text: value[i].split('*_*')[1]});
+        }
+      }
+      select.firstRender = false;
+    }
+
     var options = options || select.options;
     options = publicoptions.concat(options);
 
     // 渲染Select Options
     var selectOptionsHtml = '';
-    var value = select.value;
     var len = options.length;
     if (maxCount) {
       len = len > maxCount ? maxCount : len;
     }
+    var minCount = publicoptions.length;
+    len = len < minCount ? minCount : len;
+
     for (var i = 0; i < len; i++) {
       var opt = options[i];
       var optVal = opt.value;
@@ -110,9 +138,10 @@ var linkTree = {
       $select: $select,
       $value: $selectValue,
       value: valueArr,
-      options: options
+      options: options,
+      firstRender: true
     };
-    console.log('[renderSelect] title: %s, size: %d, selectRender: %o', title, options.length, selectRender);
+    // console.log('[renderSelect] title: %s, size: %d, selectRender: %o', title, options.length, selectRender);
 
     return selectRender;
   },
@@ -125,7 +154,7 @@ var linkTree = {
     }
   },
   bindEvents: function (treeData) {
-    console.log('[bindEvents]级联树: %o, selectIds: %o, selects: %o', treeData, linkTree.selectIds, linkTree.selects);
+    // console.log('[bindEvents]级联树: %o, selectIds: %o, selects: %o', treeData, linkTree.selectIds, linkTree.selects);
     var selectIds = linkTree.selectIds;
     var selects = linkTree.selects;
     for (var i = 0, len = selectIds.length; i < len; i++) {
@@ -193,7 +222,65 @@ var linkTree = {
         }
 
         // console.log('[event]hide.bs.select value: %o', val);
+      }).on('show.bs.select', function () {
+        var $this = $(this); // this === e.target
+        var $select = $this; // select.$select 不能在回调里使用局部变量select，selec只保留最后一个select引用
+        var selectId = $select.attr('id');
+        var select = selects[selectId];
+        var selectIndex= selectIds.indexOf(selectId);
+        var treeValue = linkTree.getTreeValue();
+        var options = [];
+        var nodeParent = treeData;
+        for (var treeDeep = 0; treeDeep < selectIndex; treeDeep++) {
+          var treeNodeValueArr = treeValue[treeDeep].split(',');
+          var treeNodePool = [];
+          var valLen = treeNodeValueArr.length;
+          var val0 = valLen ? treeNodeValueArr[0].split('*_*')[1] : false;
+          if (!val0 || val0 === 'gb' || val0 === 'summary') {
+            // 如果未选 或者 选择 展开和收拢 合并所有子项
+            for (var i = 0, len = nodeParent.length; i < len; i++) {
+              var node = nodeParent[i];
+              treeNodePool = treeNodePool.concat(node.next);
+            }
+          } else {
+            for (var valIdx = 0; valIdx < valLen; valIdx++) {
+              var treeNodeValue = treeNodeValueArr[valIdx];
+              for (var i = 0, len = nodeParent.length; i < len; i++) {
+                var node = nodeParent[i];
+                var nodeVal = node.value;
+                if (nodeVal === treeNodeValue) {
+                  treeNodePool = treeNodePool.concat(node.next);
+                }
+              }
+            }
+          }
+          nodeParent = treeNodePool;
+        }
+        // 去重
+        for (var i = 0, len = nodeParent.length; i < len; i++) {
+          var hasThis = false;
+          var opt = nodeParent[i];
+          for (var j = 0, jlen = options.length; j < jlen; j++) {
+            if (options[j].value === opt.value) {
+              hasThis = true;
+            }
+          }
+          if (!hasThis) {
+            options.push(opt);
+          }
+        }
+        // console.log('options: %o', options);
+        linkTree.renderSelect(selectId, null, options);
+        // console.log('selectIndex: %d, selectId: %s, options: %o, TreeValue: %o', selectIndex, selectId, select.options, linkTree.getTreeValue());
+        // linkTree.renderSelect(selectId); // 渲染所有选项
+        // Mask.hide();
       });
+
+      // 绑定下拉点击事件：点击时显示透明蒙层 防止用户重复点击
+      // select.$select.parent().on('click', function () {
+      //   console.log('click select', this);
+      //   Mask.show();
+      // });
     }
   }
 };
@@ -202,21 +289,23 @@ var linkTreeHandlerOptimize = function (rows, filterSettings) {
   linkTree.rows = rows;
 
   Timer.start('convert_data_time');
-  var fieldMapValues = TreeUtils.rowsToMap(rows, 1000);
+  var fieldMapValues = TreeUtils.rowsToMap(rows);
   Timer.stop('convert_data_time');
 
   Timer.start('bulid_tree_time');
-  var treeData = TreeUtils.buildTree(rows, 1000);
+  var treeData = TreeUtils.buildTree(rows);
   Timer.stop('bulid_tree_time');
+  // TreeUtils.PrintTree.call({ value: '筛选树数据', next: treeData});
 
   Timer.start('link_tree_handler_time');
   var renderData = linkTree.renderData(fieldMapValues, filterSettings);
-  // TreeUtils.PrintTree.call({ value: '筛选树数据', next: treeData});
   linkTree.initRender(renderData);
+
+  // console.log('rows: %o fieldMapValues: %o treeData: %o', rows, fieldMapValues, treeData);
 
   var selectIds = linkTree.selectIds;
   for (var i = 0, len = selectIds.length; i < len; i++) {
-    linkTree.renderSelect(selectIds[i]);
+    linkTree.renderSelect(selectIds[i], 2);
   }
 
   linkTree.bindEvents(treeData);

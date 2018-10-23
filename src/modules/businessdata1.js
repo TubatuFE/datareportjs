@@ -7,9 +7,9 @@ import Suggest from './coms/suggest.js';
 import Calendar from './coms/timecalendar.js';
 import OaCalendar from './coms/oa-calendar.js';
 import Timer from './atoms/timer';
-import Toast from './atoms/toast';
-import './atoms/printtop';
-import './atoms/formsubmit';
+// import Toast from './atoms/toast';
+// import './atoms/printtop';
+// import './atoms/formsubmit';
 import linkTreeHandlerOptimize from './optimize/linkTreeHandler'
 import TreeUtils from './atoms/TreeUtils'
 import FilterSettings from './atoms/FilterSettings'
@@ -48,89 +48,72 @@ function initLinkTree(){
   Timer.start('ajax_time');
 
   $.get(url, {}, function(data) {
-      Timer.stop('ajax_time');
-      Timer.start('render_time');
-      var hasFilter = false;
-      if(data.col1 && data.col1.length > 0) {
-          hasFilter = true;
-          Timer.tag('filter_select1_num', data.col1.length);
+    Timer.stop('ajax_time');
+    Timer.start('render_time');
+    var hasFilter = false;
 
-          linkTreeHandlerOptimize(data.col1, FilterSettings.col1); // 优化联动下拉渲染
-      }
+    if(data.col1 && data.col1.length > 0) {
+        hasFilter = true;
+        Timer.tag('filter_select1_num', data.col1.length);
 
-      if(data.col2 && data.col2.length > 0){
-          hasFilter = true;
-          Timer.tag('filter_select2_num', data.col2.length);
-          for(var col2_k in data.col2){
-              var probableValue2 = TreeUtils.rowsToMap(data.col2[col2_k]);
-              var selectArr2 = createAllLinkTree(FilterSettings.col2, probableValue2);
-              createChange(selectArr2[0].id, selectArr2, 0, '');
-          }
-      }
+        linkTreeHandlerOptimize(data.col1, FilterSettings.col1); // 优化联动下拉渲染
+    }
 
-      if(data.col3 && data.col3.length > 0){
-          hasFilter = true;
-          Timer.tag('filter_select3_num', data.col3.length);
-          for(var col3_k in data.col3){
-              var probableValue3 = TreeUtils.rowsToMap(data.col3[col3_k]);
-              var selectArr3 = createAllLinkTree(FilterSettings.col3, probableValue3);
-              createChange(selectArr3[0].id, selectArr3, 0, '');
-          }
-      }
+    if(data.col2 && data.col2.length > 0){
+        hasFilter = true;
+        Timer.tag('filter_select2_num', data.col2.length);
+        for(var col2_k in data.col2){
+            var probableValue2 = TreeUtils.rowsToMap(data.col2[col2_k]);
+            var selectArr2 = createAllLinkTree(FilterSettings.col2, probableValue2);
+            createChange(selectArr2[0].id, selectArr2, 0, '');
+        }
+    }
 
-      if(data.col_date && data.col_date.length > 0) {
-          hasFilter = true;
-          Timer.tag('filter_date_num', data.col_date.length);
-          for(var coldate_k in data.col_date){
-              createDate(FilterSettings.col_date, data.col_date[coldate_k])
-          }
-      }
+    if(data.col3 && data.col3.length > 0){
+        hasFilter = true;
+        Timer.tag('filter_select3_num', data.col3.length);
+        for(var col3_k in data.col3){
+            var probableValue3 = TreeUtils.rowsToMap(data.col3[col3_k]);
+            var selectArr3 = createAllLinkTree(FilterSettings.col3, probableValue3);
+            createChange(selectArr3[0].id, selectArr3, 0, '');
+        }
+    }
 
-      if(data.col_qujian && data.col_qujian.length > 0) {
-          hasFilter = true;
-          Timer.tag('filter_qujian_num', data.col_qujian.length);
-          for(var colqujian_k in data.col_qujian){
-              createQujian(FilterSettings.col_qujian, data.col_qujian[colqujian_k])
-          }
-      }
+    if(data.col_date && data.col_date.length > 0) {
+        hasFilter = true;
+        Timer.tag('filter_date_num', data.col_date.length);
+        for(var coldate_k in data.col_date){
+            createDate(FilterSettings.col_date, data.col_date[coldate_k])
+        }
+    }
 
-      if(data.col_text && data.col_text.length > 0) {
-          hasFilter = true;
-          Timer.tag('filter_text_num', data.col_text.length);
-          for(var coltext_k in data.col_text){
-              createText(FilterSettings.col_text, data.col_text[coltext_k])
-          }
-      }
-      Timer.stop('render_time');
-      var costTime =Timer.getTime('ajax_time') + Timer.getTime('render_time');
-      if (costTime > 5000) {
-          var toastDelay = costTime / 10;
-          toastDelay = toastDelay < 500 ? 500 : toastDelay > 3000 ? 3000 : toastDelay;
-          Toast.show('clock', '总耗时：' + parseFloat(costTime / 1000).toFixed(1) + "秒\n渲染耗时:" + parseFloat(Timer.getTime('render_time') / 1000).toFixed(1) + "秒\n非常抱歉，让您久等了...", toastDelay, function (el) {
-              Toast.show(null, '^_^感谢您的耐心等待' + "\n" + '现在可以完整使用报表了...');
-          });
-      }
+    if(data.col_qujian && data.col_qujian.length > 0) {
+        hasFilter = true;
+        Timer.tag('filter_qujian_num', data.col_qujian.length);
+        for(var colqujian_k in data.col_qujian){
+            createQujian(FilterSettings.col_qujian, data.col_qujian[colqujian_k])
+        }
+    }
 
-      if (hasFilter) { Timer.post(); }
+    if(data.col_text && data.col_text.length > 0) {
+        hasFilter = true;
+        Timer.tag('filter_text_num', data.col_text.length);
+        for(var coltext_k in data.col_text){
+            createText(FilterSettings.col_text, data.col_text[coltext_k])
+        }
+    }
+    Timer.stop('render_time');
+    //   var costTime =Timer.getTime('ajax_time') + Timer.getTime('render_time');
+    //   if (costTime > 5000) {
+    //       var toastDelay = costTime / 10;
+    //       toastDelay = toastDelay < 500 ? 500 : toastDelay > 3000 ? 3000 : toastDelay;
+    //       Toast.show('clock', '总耗时：' + parseFloat(costTime / 1000).toFixed(1) + "秒\n渲染耗时:" + parseFloat(Timer.getTime('render_time') / 1000).toFixed(1) + "秒\n非常抱歉，让您久等了...", toastDelay, function (el) {
+    //           Toast.show(null, '^_^感谢您的耐心等待' + "\n" + '现在可以完整使用报表了...');
+    //       });
+    //   }
+
+    if (hasFilter) { Timer.post(); }
   });
-}
-
-function linkTreeHandler(data, probableValue,menuSetting){
-  Timer.start('create_all_link_tree_time');
-  var selectArr = createAllLinkTree(menuSetting, probableValue);
-  Timer.stop('create_all_link_tree_time');
-  if(!selectArr.length){return;}
-  //初始化第一个下拉框
-  rendLinkTree(selectArr[0].id, selectArr[0].value, data, selectArr[0].title, selectArr[0].dimensionView, selectArr[0].col);
-
-  //创建点击事件
-  createChange(selectArr[0].id, selectArr, 0, data);
-  
-  //设置默认值
-  Timer.start('set_link_tree_default_time');
-  setlinkTreeDefault(selectArr);
-  Timer.stop('set_link_tree_default_time');
-  console.log('selectArr', selectArr);
 }
 
 /**
@@ -251,23 +234,6 @@ function rendLinkTree( name, defaultvalue, data, title, dimensionView, col ){
 
   console.log('title: %s, loop_count: %d, rendLinkTree: %d ms, $(%s).selectpicker(refresh): %d ms, selectpicker2: %d ms',
   title, loop_count, Timer.getTime('rendLinkTree'), select_id, Timer.getTime('selectpicker'), Timer.getTime('selectpicker2'));
-}
-
-//设置默认值
-function setlinkTreeDefault(selectArr){
-  var col,value,text;
-  if(!selectArr){return;}
-  
-  for(var i= 0,len= selectArr.length; i<len; i++){
-      //col = selectArr[i].col;
-      //value = selectArr[i].value;
-      //value = value === 'by'?'gb':value;
-      //value = col + '*_*' + value;
-      //$('select[name=' + selectArr[i].id +']').find('option[value="' + value+ '"]').prop("selected","selected");
-      $('select[id=' + selectArr[i].id +']').change();
-      //text = $('select[name=' + selectArr[i].id +']').find("option:selected").text();
-      //$('input[name=' + selectArr[i].id+']').val(value);
-  }
 }
 
 function initEvent(){
@@ -522,7 +488,11 @@ function createText(menuSetting, probableValue){
                     o.val(col + '*_*' + value + '-~');
                 } else {
                     $('input[id=' + id + ']').val('');
-                    o.val(col + '*_*gb');
+                    if (value === 'by') {
+                        o.val(col + '*_*gb');
+                    } else {
+                        o.val(col + '*_*summary');
+                    }
                 }
                 
                 $('input[id=' + id + ']').bind('blur',function(){
@@ -1280,6 +1250,5 @@ function checkURLType(){
         return 2;
     }
 }
-
 
 export default BusinessData;

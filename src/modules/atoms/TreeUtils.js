@@ -2,6 +2,7 @@ var TreeUtils = {
   valueKey: 'value',
   pointerKey: 'next',
   titleKey: 'text',
+  
   rowsToMap: function (rows, max, keys) {
     // 将数据库行数据转换为字段映射数据
     if (!rows || !rows.length) return {};
