@@ -130,10 +130,10 @@
 	});
 
 	// 监听window的resize事件
-	$(window).on('resize' , function(ev){
+	$(window).on('resize' , function(ev) {
+		if (!DomCalendar.__calendars.length) return;
 
 		setCalendarPos(DomCalendar.__calendars[DomCalendar.__calendarId]);
-
 	});
 
 	export default DomCalendar;

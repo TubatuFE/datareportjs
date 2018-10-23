@@ -1,18 +1,23 @@
-    import './daterangepicker.js';
-    import pages from '../atoms/pages.js';
-    import SingleSelect from './singleselect.js';
-    import MultiSelect from './multiselect.js';
-    import util from '../atoms/util.js';
-    import Linktree from '../atoms/linktree.js';
-    import Suggest from './suggest.js';
-    // import convertPinYin from '../atoms/convertpinyin.js';
-    import Calendar from './timecalendar.js';
-    import OaCalendar from './oa-calendar.js';
+    import util from './atoms/util.js';
+    import Linktree from './atoms/linktree.js';
+    import pages from './atoms/pages.js';
+    import './coms/daterangepicker.js';
+    import SingleSelect from './coms/singleselect.js';
+    import MultiSelect from './coms/multiselect.js';
+    import Suggest from './coms/suggest.js';
+    import Calendar from './coms/timecalendar.js';
+    import OaCalendar from './coms/oa-calendar.js';
+    import Timer from './atoms/timer';
+    // import Loading from './atoms/loading';
+    // import Toast from './atoms/toast';
+    // import './atoms/printtop';
+    /// import './atoms/formsubmit';
     
 	var BusinessData = function(){
 	}
 
 	BusinessData.prototype.init = function(){
+        // Loading.show('数据已加载，等待筛选条件就绪...');
 		initEvent();
 		this.render();
 	}
@@ -128,7 +133,8 @@
 
     //初始化维度下拉框
     function initLinkTree(){
-        // var Linktree = require('linktree'),
+        // console.log('1) call initLinkTree');
+
         var url;
         if(checkURLType()===1){
             url = window.location.href + '/req_menu/1';
@@ -136,8 +142,12 @@
             url = window.location.href + '&req_menu=1';
         }
 
+        // console.log('2) url', url);
+
         var menuSetting = $('#menu_select').val() ? JSON.parse($('#menu_select').val()) : null;
-        
+
+        // console.log('3) menuSetting', menuSetting);
+
         var col1=[],col2=[],col3=[],col_date=[],col_text=[],col_qujian=[];
         if(menuSetting){
             for(var item in menuSetting){
@@ -171,21 +181,41 @@
                 
             }
         }
-        
-        
-        $.get(url, {}, function(data) {
-            //console.log(data);
-            if(data.col1 && data.col1.length > 0) {
 
+        Timer.tag('user_name', user_name);
+        Timer.tag('path', location.pathname);
+        Timer.tag('page_nav', page_path_info);
+        Timer.tag('date_start', date_start);
+        Timer.tag('date_end', date_end);
+
+        Timer.start('ajax_time');
+        $.get(url, {}, function(data) {
+            Timer.stop('ajax_time');
+            Timer.start('render_time');
+            var hasFilter = false;
+            if(data.col1 && data.col1.length > 0) {
+                // data.col1.PrintTop(10);
+                hasFilter = true;
+                Timer.tag('filter_select1_num', data.col1.length);
+                Timer.start('convert_data_time');
                 var probableValue = convertData(data.col1);
+                Timer.stop('convert_data_time');
+
+                // console.log('probableValue: %o', probableValue);
 
                 var linktree = new Linktree();
                 
-                linkTreeHandler(linktree.bulidTree(data.col1), probableValue,col1);
+                Timer.start('bulid_tree_time');
+                var bulidTreeRes = linktree.bulidTree(data.col1);
+                Timer.stop('bulid_tree_time');
+                Timer.start('link_tree_handler_time');
+                linkTreeHandler(bulidTreeRes, probableValue, col1);
+                Timer.stop('link_tree_handler_time');
             }
 
             if(data.col2 && data.col2.length > 0){
-                
+                hasFilter = true;
+                Timer.tag('filter_select2_num', data.col2.length);
                 for(var col2_k in data.col2){
                     var probableValue2 = convertData(data.col2[col2_k]);
                     var selectArr2 = createAllLinkTree(col2, probableValue2);
@@ -194,6 +224,8 @@
             }
 
             if(data.col3 && data.col3.length > 0){
+                hasFilter = true;
+                Timer.tag('filter_select3_num', data.col3.length);
                 for(var col3_k in data.col3){
                     var probableValue3 = convertData(data.col3[col3_k]);
                     var selectArr3 = createAllLinkTree(col3, probableValue3);
@@ -202,37 +234,59 @@
             }
 
             if(data.col_date && data.col_date.length > 0) {
+                hasFilter = true;
+                Timer.tag('filter_date_num', data.col_date.length);
                 for(var coldate_k in data.col_date){
                     createDate(col_date,data.col_date[coldate_k])
                 }
             }
 
             if(data.col_qujian && data.col_qujian.length > 0) {
+                hasFilter = true;
+                Timer.tag('filter_qujian_num', data.col_qujian.length);
                 for(var colqujian_k in data.col_qujian){
                     createQujian(col_qujian,data.col_qujian[colqujian_k])
                 }
             }
 
             if(data.col_text && data.col_text.length > 0) {
+                hasFilter = true;
+                Timer.tag('filter_text_num', data.col_text.length);
                 for(var coltext_k in data.col_text){
                     createText(col_text,data.col_text[coltext_k])
                 }
             }
+            Timer.stop('render_time');
+            // Loading.hide();
+            // var costTime =Timer.getTime('ajax_time') + Timer.getTime('render_time');
+            // if (costTime > 5000) {
+            //     var toastDelay = costTime / 10;
+            //     toastDelay = toastDelay < 500 ? 500 : toastDelay > 3000 ? 3000 : toastDelay;
+            //     Toast.show('clock', '耗时：' + parseFloat(costTime / 1000).toFixed(1) + '秒' + "\n非常抱歉，让您久等了...", toastDelay, function (el) {
+            //         Toast.show(null, '^_^感谢您的耐心等待' + "\n" + '现在可以完整使用报表了...');
+            //     });
+            // }
+
+            if (hasFilter) { Timer.post(); }
         });
     }
 
     function linkTreeHandler(data, probableValue,menuSetting){
-        
+        Timer.start('create_all_link_tree_time');
         var selectArr = createAllLinkTree(menuSetting, probableValue);
+        Timer.stop('create_all_link_tree_time');
         if(!selectArr.length){return;}
         //初始化第一个下拉框
         rendLinkTree(selectArr[0].id, selectArr[0].value, data, selectArr[0].title, selectArr[0].dimensionView, selectArr[0].col);
-        
+
         //创建点击事件
         createChange(selectArr[0].id, selectArr, 0, data);
         
         //设置默认值
+        Timer.start('set_link_tree_default_time');
         setlinkTreeDefault(selectArr);
+        Timer.stop('set_link_tree_default_time');
+        // console.log('selectArr', selectArr);
     }
 
     /**
@@ -409,6 +463,9 @@
                     if(value && value !='by' && value!= 'summary'){
                         $('input[id=' + id + ']').val(value);
                         o.val(col + '*_*' + value + '-~');
+                    } else {
+                        $('input[id=' + id + ']').val('');
+                        o.val(col + '*_*gb');
                     }
                     
                     $('input[id=' + id + ']').bind('blur',function(){
@@ -421,7 +478,7 @@
                                 o.val(probableValue + "*_*" + $(this).val() + '-~')
                             }
                         } else {
-                            o.val('');
+                            o.val(probableValue + '*_*gb');
                         }
                     });
                 }
@@ -439,19 +496,23 @@
             selectArr = [], data = [];
         if(!menuSetting){return;}
         
-        for(var item in menuSetting){
-            
-                var id = item;
-                var col = menuSetting[item]['col'];
-                var value = menuSetting[item]['value'];
-                var parent = menuSetting[item]['parent'];
-                var dimensionView = menuSetting[item]['dimensionView'];
-                //selectArr.push({id:id,col:col,value:value,title:parent,dimensionView:dimensionView});
-                /*rendLinkTree(id, value, [], parent, dimensionView, col);*/
-            
+        var counterOut = 0;
+        var counterInner = 0;
+        for (var item in menuSetting) {
+        
+            var id = item;
+            var col = menuSetting[item]['col'];
+            var value = menuSetting[item]['value'];
+            var parent = menuSetting[item]['parent'];
+            var dimensionView = menuSetting[item]['dimensionView'];
+            //selectArr.push({id:id,col:col,value:value,title:parent,dimensionView:dimensionView});
+            /*rendLinkTree(id, value, [], parent, dimensionView, col);*/
+        
             if(probableValue[col]) {
                 data = [];
+                counterOut++;
                 for (var i = 0; i < probableValue[col].length; i++) {
+                    counterInner++;
                     data.push({value: col + '*_*' + probableValue[col][i], text: probableValue[col][i]});
                 }
                 selectArr.push({
@@ -465,36 +526,38 @@
                 rendLinkTree(id, value, data, parent, dimensionView, col);
             }
         }
+        // console.log('注释 createAllLinkTree/rendLinkTree');
+        // console.log('counterOut: %s, counterInner: %s', counterOut, counterInner);
         return selectArr;
     }
     
     //渲染下拉菜单
     function rendLinkTree( name, defaultvalue, data, title, dimensionView, col ){
-        
+        Timer.start('rendLinkTree');
         var html = "",
             common =  [{value:col + '*_*' +'gb',text:'展开'},{value:col + '*_*' +'summary',text:'收拢'}],
             lastValue = true;
         
         var select_id = 'select[id=' + name + ']';
-        
+
         if(!$(select_id).length){
             $('<div class="col_l dw-query-field m_b_10"><input class="subline_input ' + name  + '" name="' + name + '" ></div>').insertBefore($('div.option_canal input.submit'));
             $('<div class="input-group"><span class="input-group-addon">' + title + ':</span><select id="'+ name  +'" title="支持多选，请选择" data-live-search="true" multiple="" data-hide-disabled="true" data-width="214" data-size="10" tabindex="-98"></select></div>').insertBefore($('input.' + name));
         }
-        
+
         //上次记录的值
         //lastValue =  $('select[id="' + name + '"] option:selected').val();
         data = common.concat(data);
         if(defaultvalue === 'by'){
             defaultvalue = 'gb';
         }
-        
+
         var aDefaultvalue = defaultvalue.split(',');
         var aDefaultvalue_str = '';
         
         var selectedValue = false;
-        for(var i = 0;i < data.length; i++){
-            
+
+        for (var i = 0;i < data.length; i++) {
             for(var df = 0; df < aDefaultvalue.length; df++){
                 if(data[i].value === col + '*_*' + aDefaultvalue[df]){
                     selectedValue = true;
@@ -511,28 +574,38 @@
             }
             selectedValue = false;
         }
+
         $(select_id).html(html);
 
-        
-        
         if(lastValue){
             $(select_id + ' option').eq(1).attr('selected','selected');
             $('input[name=' + name + ']').val($(select_id + ' option').eq(1).val());
-        }       
-        
+        }
+
         if(aDefaultvalue_str && aDefaultvalue_str !== $('input[name=' + name + ']').val()) {
             $('input[name=' + name + ']').val(aDefaultvalue_str);
         }
-        
+
+        Timer.start('selectpicker');
         $(select_id).selectpicker('refresh');
+        Timer.stop('selectpicker');
+
+        Timer.start('selectpicker2');
         $(select_id).selectpicker({
-            selectedTextFormat:'count > 3'
+          selectedTextFormat: 'count > 3'
         });
-        
+        Timer.stop('selectpicker2');
+
         $('input.'+name).hide();
+
+        Timer.stop('rendLinkTree');
+        var loop_count = data.length;
+
+        // console.log('title: %s, loop_count: %d, rendLinkTree: %d ms, $(%s).selectpicker(refresh): %d ms, selectpicker2: %d ms',
+        // title, loop_count, Timer.getTime('rendLinkTree'), select_id, Timer.getTime('selectpicker'), Timer.getTime('selectpicker2'));
     }
-    
-    function selectRender(name,obj){
+
+    function selectRender (name,obj) {
         var select_id = 'select[id=' + name + ']';
         $(select_id).selectpicker('deselectAll');
         $(select_id).val(obj[0] + '*_*' + obj[1]);
