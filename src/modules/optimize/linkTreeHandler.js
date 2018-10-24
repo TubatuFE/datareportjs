@@ -167,6 +167,7 @@ var linkTree = {
         var $select = $this; // select.$select 不能在回调里使用局部变量select，selec只保留最后一个select引用
         var name = $select.attr('id');
         var $value = $('input[name=' + name + ']');
+        var select = selects[name];
 
         if (clickedIndex === 0 || clickedIndex === 1) {
           // 展开 & 收拢
@@ -174,10 +175,14 @@ var linkTree = {
           if (val) {
             $select.selectpicker('val', [optVal]);
             $value.val(optVal);
+            // 保存Value值到selelcts
+            select.value = [optVal];
           } else {
             // 没有值
             $select.selectpicker('val', '');
             $value.val('');
+            // 保存Value值到selelcts
+            select.value = [''];
           }
         } else {
           if (val) {
@@ -200,9 +205,13 @@ var linkTree = {
               $select.selectpicker('val', val);
             }
             $value.val(val.join(','));
+            // 保存Value值到selelcts
+            select.value = val;
           } else {
             // 没有值
             $value.val('');
+            // 保存Value值到selelcts
+            select.value = [''];
           }
         }
 
@@ -219,6 +228,8 @@ var linkTree = {
           var defaultVal = $select.children().eq(1).val();
           $select.selectpicker('val', [defaultVal]);
           $value.val(defaultVal);
+          // 保存Value值到selelcts
+          select.value = [defaultVal];
         }
 
         // console.log('[event]hide.bs.select value: %o', val);
@@ -274,6 +285,12 @@ var linkTree = {
         // console.log('selectIndex: %d, selectId: %s, options: %o, TreeValue: %o', selectIndex, selectId, select.options, linkTree.getTreeValue());
         // linkTree.renderSelect(selectId); // 渲染所有选项
         // Mask.hide();
+      }).on('shown.bs.select', function () {
+        // 下拉框 展开高度限制
+        var dropdownMenuOpen = this.previousSibling;
+        var dropdownmenuInner = dropdownMenuOpen.lastChild; // dropdownMenuOpen.childNodes;
+        dropdownMenuOpen.style.cssText = 'max-height: 312px; overflow: hidden;';
+        dropdownmenuInner.style.cssText = 'max-height: 260px; overflow-y: auto;';
       });
 
       // 绑定下拉点击事件：点击时显示透明蒙层 防止用户重复点击
