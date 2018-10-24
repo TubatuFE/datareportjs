@@ -17,14 +17,9 @@ var linkTree = {
     }
     return selectTreeValue;
   },
-  renderData: function (fieldMapValues, filterSettings) {
+  renderData: function (filterSettings) {
     // console.log('[renderData]字段映射表: %o, 筛选设置：%o', fieldMapValues, filterSettings);
-    var id,
-        col,
-        value,
-        parent,
-        dimensionView,
-        renderData = [],
+    var renderData = [],
         options = [];
 
     if(!filterSettings) { return; }
@@ -36,22 +31,31 @@ var linkTree = {
       var parent = filterSettings[selectId]['parent'];
       var dimensionView = filterSettings[selectId]['dimensionView'] || false; // 维度图表显示
 
-      if(fieldMapValues[col]) {
-        options = [];
+      renderData.push({
+        id: id,
+        title: parent,
+        col: col,
+        value: value,
+        options: options,
+        dimensionView: dimensionView
+      });
 
-        for (var i = 0; i < fieldMapValues[col].length; i++) {
-          options.push({value: col + '*_*' + fieldMapValues[col][i], text: fieldMapValues[col][i]});
-        }
+      // if(fieldMapValues[col]) {
+      //   options = [];
 
-        renderData.push({
-          id: id,
-          title: parent,
-          col: col,
-          value: value,
-          options: options,
-          dimensionView: dimensionView
-        });
-      }
+      //   for (var i = 0; i < fieldMapValues[col].length; i++) {
+      //     options.push({value: col + '*_*' + fieldMapValues[col][i], text: fieldMapValues[col][i]});
+      //   }
+
+      //   renderData.push({
+      //     id: id,
+      //     title: parent,
+      //     col: col,
+      //     value: value,
+      //     options: options,
+      //     dimensionView: dimensionView
+      //   });
+      // }
     }
 
     return renderData;
@@ -306,7 +310,7 @@ var linkTreeHandlerOptimize = function (rows, filterSettings) {
   linkTree.rows = rows;
 
   Timer.start('convert_data_time');
-  var fieldMapValues = TreeUtils.rowsToMap(rows);
+  // var fieldMapValues = TreeUtils.rowsToMap(rows);
   Timer.stop('convert_data_time');
 
   Timer.start('bulid_tree_time');
@@ -315,7 +319,7 @@ var linkTreeHandlerOptimize = function (rows, filterSettings) {
   // TreeUtils.PrintTree.call({ value: '筛选树数据', next: treeData});
 
   Timer.start('link_tree_handler_time');
-  var renderData = linkTree.renderData(fieldMapValues, filterSettings);
+  var renderData = linkTree.renderData(filterSettings);
   linkTree.initRender(renderData);
 
   // console.log('rows: %o fieldMapValues: %o treeData: %o', rows, fieldMapValues, treeData);
