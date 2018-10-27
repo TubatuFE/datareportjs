@@ -1,12 +1,12 @@
 import TreeUtils from '../atoms/TreeUtils'
 import Timer from '../atoms/timer';
-// import Mask from '../atoms/mask';
 
 var linkTree = {
   rows: [],
   selects: {},
   selectIds: [],
   selectTreeValue: [],
+  selectUpdateStatus: [], // 下拉选项更新状态：最近一次 treeParentChanged 后是否有更新 true 已更新 false 未更新
   getTreeValue: function () {
     var selectIds = this.selectIds;
     var selects = this.selects;
@@ -17,8 +17,26 @@ var linkTree = {
     }
     return selectTreeValue;
   },
+  treeParentChanged: function (treeValue, deep) {
+    var prevTreeValue = linkTree.selectTreeValue;
+    if (prevTreeValue.length <= deep || treeValue.length <= deep) return true;
+  
+    return prevTreeValue.slice(0, deep).join('/') !== treeValue.slice(0, deep).join('/');
+  },
+  refreshSelectUpdateStatus: function (deep) {
+    // 下拉选项发生改变 更新 子孙节点 下拉更新状态
+    var selectUpdateStatus = linkTree.selectUpdateStatus;
+    for (var i = deep + 1, len = selectUpdateStatus.length; i < len; i++) {
+      selectUpdateStatus[i] = false;
+    }
+  },
+  cbSelectValueChange: function (selIdx, value) {
+    // console.log('cbSelectValueChange', selIdx, value);
+    // 当前索引的 select 值发生改变 将子节点 更新状态设置 false
+    linkTree.refreshSelectUpdateStatus(selIdx);
+    // console.log('selectUpdateStatus: %o', linkTree.selectUpdateStatus);
+  },
   renderData: function (filterSettings) {
-    // console.log('[renderData]字段映射表: %o, 筛选设置：%o', fieldMapValues, filterSettings);
     var renderData = [],
         options = [];
 
@@ -39,23 +57,6 @@ var linkTree = {
         options: options,
         dimensionView: dimensionView
       });
-
-      // if(fieldMapValues[col]) {
-      //   options = [];
-
-      //   for (var i = 0; i < fieldMapValues[col].length; i++) {
-      //     options.push({value: col + '*_*' + fieldMapValues[col][i], text: fieldMapValues[col][i]});
-      //   }
-
-      //   renderData.push({
-      //     id: id,
-      //     title: parent,
-      //     col: col,
-      //     value: value,
-      //     options: options,
-      //     dimensionView: dimensionView
-      //   });
-      // }
     }
 
     return renderData;
@@ -66,7 +67,6 @@ var linkTree = {
     var field = select.field;
     var publicoptions =  [{value: field + '*_*' +'gb', text:'展开'}, {value: field + '*_*' +'summary', text: '收拢'}];
 
-    // console.log('field: %s, value: %o', field, value);
     // 首次渲染：补充已经选中的值
     if (select.firstRender) {
       var fieldVal0 = value[0].split('*_*')[1];
@@ -145,7 +145,6 @@ var linkTree = {
       options: options,
       firstRender: true
     };
-    // console.log('[renderSelect] title: %s, size: %d, selectRender: %o', title, options.length, selectRender);
 
     return selectRender;
   },
@@ -158,7 +157,6 @@ var linkTree = {
     }
   },
   bindEvents: function (treeData) {
-    // console.log('[bindEvents]级联树: %o, selectIds: %o, selects: %o', treeData, linkTree.selectIds, linkTree.selects);
     var selectIds = linkTree.selectIds;
     var selects = linkTree.selects;
     for (var i = 0, len = selectIds.length; i < len; i++) {
@@ -218,8 +216,7 @@ var linkTree = {
             select.value = [''];
           }
         }
-
-        // console.log('[event]changed.bs.select clickedIndex: %d, value: %o', clickedIndex, val);
+        linkTree.cbSelectValueChange(selectIds.indexOf(name), select.value);
       }).on('hide.bs.select', function (e) {
         var $this = $(this); // this === e.target
         var val = $this.val();
@@ -246,6 +243,14 @@ var linkTree = {
         var treeValue = linkTree.getTreeValue();
         var options = [];
         var nodeParent = treeData;
+        if (!linkTree.treeParentChanged(treeValue, selectIndex) && linkTree.selectUpdateStatus[selectIndex]) {
+          // console.log('select%s 最近一次父节点改变后，已更新选项，不重复渲染', selectIndex);
+          return;
+        }
+
+        linkTree.selectTreeValue = treeValue;
+        // console.log('select%s 父节点发生改变或最近一次父节点改变还未更新选项 重新渲染子节点下拉选项 父亲节点 %s', selectIndex, treeValue.join('/'));
+        // 父节点改动 重新渲染子节点下拉选项
         for (var treeDeep = 0; treeDeep < selectIndex; treeDeep++) {
           var treeNodeValueArr = treeValue[treeDeep].split(',');
           var treeNodePool = [];
@@ -284,11 +289,8 @@ var linkTree = {
             options.push(opt);
           }
         }
-        // console.log('options: %o', options);
         linkTree.renderSelect(selectId, null, options);
-        // console.log('selectIndex: %d, selectId: %s, options: %o, TreeValue: %o', selectIndex, selectId, select.options, linkTree.getTreeValue());
-        // linkTree.renderSelect(selectId); // 渲染所有选项
-        // Mask.hide();
+        linkTree.selectUpdateStatus[selectIndex] = true;
       }).on('shown.bs.select', function () {
         // 下拉框 展开高度限制
         var dropdownMenuOpen = this.previousSibling;
@@ -296,22 +298,12 @@ var linkTree = {
         dropdownMenuOpen.style.cssText = 'max-height: 312px; overflow: hidden;';
         dropdownmenuInner.style.cssText = 'max-height: 260px; overflow-y: auto;';
       });
-
-      // 绑定下拉点击事件：点击时显示透明蒙层 防止用户重复点击
-      // select.$select.parent().on('click', function () {
-      //   console.log('click select', this);
-      //   Mask.show();
-      // });
     }
   }
 };
 
 var linkTreeHandlerOptimize = function (rows, filterSettings) {
   linkTree.rows = rows;
-
-  Timer.start('convert_data_time');
-  // var fieldMapValues = TreeUtils.rowsToMap(rows);
-  Timer.stop('convert_data_time');
 
   Timer.start('bulid_tree_time');
   var treeData = TreeUtils.buildTree(rows);
@@ -322,12 +314,12 @@ var linkTreeHandlerOptimize = function (rows, filterSettings) {
   var renderData = linkTree.renderData(filterSettings);
   linkTree.initRender(renderData);
 
-  // console.log('rows: %o fieldMapValues: %o treeData: %o', rows, fieldMapValues, treeData);
-
   var selectIds = linkTree.selectIds;
   for (var i = 0, len = selectIds.length; i < len; i++) {
     linkTree.renderSelect(selectIds[i], 2);
+    linkTree.selectUpdateStatus.push(false);
   }
+  // console.log('linkTree.selectUpdateStatus: ', linkTree.selectUpdateStatus);
 
   linkTree.bindEvents(treeData);
   Timer.stop('link_tree_handler_time');
