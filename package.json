@@ -1,6 +1,6 @@
 {
   "name": "viewreportjs",
-  "version": "1.2.0",
+  "version": "1.2.4",
   "description": "数据报表JS优化",
   "main": "index.js",
   "scripts": {
